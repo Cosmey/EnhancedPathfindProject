@@ -83,11 +83,17 @@ public class CameraController : MonoBehaviour
 
     public void SetTarget(InputAction.CallbackContext context)
     {
-        grid.SetGridTarget(Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue()));
+        if (context.started)
+        {
+            grid.SetGridTarget(Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue()));
+        }
     }
 
     public void PlaceAgent(InputAction.CallbackContext context)
     {
-
+        if (context.started)
+        {
+            grid.PlaceAgent(Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue()));
+        }
     }
 }
