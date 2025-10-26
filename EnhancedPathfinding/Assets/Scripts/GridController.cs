@@ -31,6 +31,10 @@ public class GridController : MonoBehaviour
             Destroy(value);
         }
         squares = new Dictionary<Vector2, GameObject>();
+
+        Destroy(currentTarget);
+        currentAgent.GetComponent<Agent>().ClearPathLine();
+        Destroy(currentAgent);
     }
 
     public void BeginSimulation()
@@ -51,7 +55,7 @@ public class GridController : MonoBehaviour
             for(int j = -1;j <= 1;j++)
             {
                 Vector2 newPosition = gridPosition + new Vector2(i, j);
-                if ((i != 0 || j != 0) && !squares.ContainsKey(newPosition) && !nonVisitables.Contains(newPosition)) neighbors.Add(newPosition); 
+                if (!(i != 0 && j != 0) && !squares.ContainsKey(newPosition) && !nonVisitables.Contains(newPosition)) neighbors.Add(newPosition); 
             }
         }
         return neighbors;

@@ -142,7 +142,7 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDamping: 1.5
+  m_LinearDamping: 3
   m_AngularDamping: 0.05
   m_GravityScale: 0
   m_Material: {fileID: 0}
@@ -169,5 +169,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Agent
   maxSearch: 5000
-  reachDistance: 0.3
+  reachDistance: 1
   speed: 10
+  pathLinePrefab: {fileID: 4536387896601857252, guid: 8f37c7814a05063488b3be59f7990934, type: 3}

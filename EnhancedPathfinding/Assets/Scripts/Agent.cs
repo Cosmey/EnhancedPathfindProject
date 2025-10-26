@@ -9,6 +9,9 @@ public class Agent : MonoBehaviour
     [SerializeField] private float reachDistance;
     [SerializeField] private float speed;
 
+    [SerializeField] private GameObject pathLinePrefab;
+    private GameObject currentPathLine;
+
     private List<Vector2> currentPath;
     private int currentPathPoint;
     private bool atTarget;
@@ -34,13 +37,20 @@ public class Agent : MonoBehaviour
     {
         if(currentPath != null && !atTarget)
         {
-            Debug.Log(currentPath[currentPathPoint]);
+
             rb.linearVelocity += (currentPath[currentPathPoint] - (Vector2)transform.position).normalized * speed * Time.deltaTime;
-            if (Vector2.Distance(currentPath[currentPathPoint], (Vector2)transform.position) < reachDistance) currentPathPoint--;
-            if (currentPathPoint < 0) atTarget = true;
+            if (Vector2.Distance(currentPath[currentPathPoint], (Vector2)transform.position) < reachDistance)
+            {
+                currentPathPoint++;
+            }
+            if (currentPathPoint >= currentPath.Count) currentPathPoint--; //atTarget = true;
         }
     }
 
+    public void ClearPathLine()
+    {
+        if (currentPathLine != null) Destroy(currentPathLine);
+    }
 
     public void Pathfind(Vector2 targetPosition)
     {
@@ -84,7 +94,19 @@ public class Agent : MonoBehaviour
                 currentPath.Add(pathPoint);
                 pathPoint = cameFrom[pathPoint];
             }
-            currentPathPoint = currentPath.Count-1;
+            currentPath.Reverse();
+            currentPathPoint = 0;
+
+            if (currentPathLine != null) Destroy(currentPathLine);
+            currentPathLine = Instantiate(pathLinePrefab);
+            pathLinePrefab.transform.position = Vector2.zero;
+            LineRenderer lRenderer = currentPathLine.GetComponent<LineRenderer>();
+            lRenderer.positionCount = currentPath.Count;
+            lRenderer.SetPosition(0, startingPoint);
+            for (int i = 1; i < currentPath.Count; i++)
+            {
+                lRenderer.SetPosition(i, currentPath[i]);
+            }
         }
 
 
