@@ -12,6 +12,9 @@ public class GridController : MonoBehaviour
 
     private GameObject currentTarget;
 
+    bool sendAgentUpdate = false;
+    int waitTime = 0;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -21,7 +24,16 @@ public class GridController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        //need to wait a few frames for the raycasting to be able to see the updates to the grid
+        waitTime++;
+        if (sendAgentUpdate && waitTime >= 5)
+        {
+            sendAgentUpdate = false;
+            if (currentAgent != null)
+            {
+                currentAgent.GetComponent<Agent>().GridUpdated();
+            }
+        }
     }
 
     public Vector2 GetTargetPosition()
@@ -73,10 +85,8 @@ public class GridController : MonoBehaviour
 
     public void GridUpdated()
     {
-        if(currentAgent != null)
-        {
-            currentAgent.GetComponent<Agent>().GridUpdated();
-        }
+        waitTime = 0;
+        sendAgentUpdate = true;
     }
 
     public void ChangeSquare(bool squareEnabled, Vector2 position)
