@@ -24,6 +24,11 @@ public class GridController : MonoBehaviour
         
     }
 
+    public Vector2 GetTargetPosition()
+    {
+        return GetGridPositionFromPosition(currentTarget.transform.position);
+    }
+
     public void ResetGrid()
     {
         foreach (var value in squares.Values)
@@ -33,7 +38,7 @@ public class GridController : MonoBehaviour
         squares = new Dictionary<Vector2, GameObject>();
 
         Destroy(currentTarget);
-        currentAgent.GetComponent<Agent>().ClearPathLine();
+        currentAgent.GetComponent<Agent>().ClearPathLines();
         Destroy(currentAgent);
     }
 
@@ -41,7 +46,8 @@ public class GridController : MonoBehaviour
     {
         if(currentAgent != null)
         {
-            currentAgent.GetComponent<Agent>().Pathfind(GetGridPositionFromPosition(currentTarget.transform.position));
+            currentAgent.GetComponent<Agent>().Activate();
+            currentAgent.GetComponent<Agent>().Pathfind();
         }
     }
 
@@ -65,6 +71,14 @@ public class GridController : MonoBehaviour
         return new Vector2(Mathf.Round(position.x), Mathf.Round(position.y));
     }
 
+    public void GridUpdated()
+    {
+        if(currentAgent != null)
+        {
+            currentAgent.GetComponent<Agent>().GridUpdated();
+        }
+    }
+
     public void ChangeSquare(bool squareEnabled, Vector2 position)
     {
         Vector2 gridPosition = GetGridPositionFromPosition(position);
@@ -72,12 +86,14 @@ public class GridController : MonoBehaviour
         {
             Destroy(squares[gridPosition]);
             squares.Remove(gridPosition);
+            GridUpdated();
         }
         if(!squares.ContainsKey(gridPosition) && squareEnabled)
         {
             GameObject newSquare = Instantiate(squarePrefab, transform);
             newSquare.transform.position = gridPosition;
             squares[gridPosition] = newSquare;
+            GridUpdated();
         }
     }
 
@@ -88,11 +104,16 @@ public class GridController : MonoBehaviour
         Destroy(currentTarget);
         currentTarget = Instantiate(targetPrefab, transform);
         currentTarget.transform.position = gridPosition;
+        GridUpdated();
     }
     public void PlaceAgent(Vector2 position)
     {
         Vector2 gridPosition = GetGridPositionFromPosition(position);
-        if (currentAgent != null) Destroy(currentAgent);
+        if (currentAgent != null)
+        {
+            currentAgent.GetComponent<Agent>().ClearPathLines();
+            Destroy(currentAgent);
+        }
         currentAgent = Instantiate(agentPrefab, transform);
         currentAgent.transform.position = gridPosition;
     }
