@@ -81,7 +81,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 1
+  m_SortingOrder: 2
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 0, g: 1, b: 0.20977783, a: 1}
   m_FlipX: 0
@@ -173,9 +173,11 @@ MonoBehaviour:
   speed: 15
   pathLinePrefab: {fileID: 4536387896601857252, guid: 8f37c7814a05063488b3be59f7990934, type: 3}
   considerationBox: {fileID: 1839297817902401239, guid: 86ebb49958183944181b9650b3f6edab, type: 3}
-  visualizationDelay: 0.01
+  pathfindVisualizationDelay: 0
   frontierColor: {r: 1, g: 0.6723701, b: 0.2688679, a: 0.54509807}
   doneColor: {r: 0.3584906, g: 0.19680353, b: 0, a: 0.65882355}
+  optimizerVisualLinePrefab: {fileID: 4536387896601857252, guid: 95cc82dbc6b622b49b3feba5ebe2612f, type: 3}
+  optimizerVisualizationDelay: 0.01
   wallsLayer:
     serializedVersion: 2
     m_Bits: 64

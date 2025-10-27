@@ -121,6 +121,7 @@ public class GridController : MonoBehaviour
         Vector2 gridPosition = GetGridPositionFromPosition(position);
         if (currentAgent != null)
         {
+            currentAgent.GetComponent<Agent>().ClearConsiderationBoxes();
             currentAgent.GetComponent<Agent>().ClearPathLines();
             Destroy(currentAgent);
         }
