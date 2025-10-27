@@ -59,7 +59,7 @@ public class GridController : MonoBehaviour
         if(currentAgent != null)
         {
             currentAgent.GetComponent<Agent>().Activate();
-            currentAgent.GetComponent<Agent>().Pathfind();
+            StartCoroutine(currentAgent.GetComponent<Agent>().Pathfind());
         }
     }
 

@@ -1,7 +1,8 @@
 
-using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
+using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class Agent : MonoBehaviour
 {
@@ -11,6 +12,14 @@ public class Agent : MonoBehaviour
 
     [SerializeField] private GameObject pathLinePrefab;
     List<GameObject> pathLines;
+
+
+    List<GameObject> considerationBoxes;
+    [SerializeField] private GameObject considerationBox;
+
+    [SerializeField] private float visualizationDelay;
+    [SerializeField] private Color frontierColor;
+    [SerializeField] private Color doneColor;
 
     private List<Vector2> currentPath;
     private int currentPathPoint;
@@ -27,6 +36,7 @@ public class Agent : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        considerationBoxes = new List<GameObject>();
         pathLines = new List<GameObject>();
         grid = GameObject.Find("Grid").GetComponent<GridController>();
         rb = GetComponent<Rigidbody2D>();
@@ -59,10 +69,21 @@ public class Agent : MonoBehaviour
             Destroy(pathLines[i]);
         }
     }
+    public void ClearConsiderationBoxes()
+    {
+        for (int i = 0; i < considerationBoxes.Count; i++)
+        {
+            Destroy(considerationBoxes[i]);
+        }
+        considerationBoxes = new List<GameObject>();
+    }
 
     public void GridUpdated()
     {
-        if(running) Pathfind();
+        currentPathPoint = 0;
+        currentPath = null;
+        StopAllCoroutines();
+        if(running) StartCoroutine(Pathfind());
     }
     public void Activate()
     {
@@ -87,9 +108,10 @@ public class Agent : MonoBehaviour
         }
         pathLines.Add(line);
     }
-    public void Pathfind()
+    public IEnumerator<WaitForSeconds> Pathfind()
     {
         ClearPathLines();
+        ClearConsiderationBoxes();
         atTarget = false;
         Vector2 startingPoint = grid.GetGridPositionFromPosition(transform.position);
         Vector2 targetPosition = grid.GetTargetPosition();
@@ -100,11 +122,15 @@ public class Agent : MonoBehaviour
         HashSet<Vector2> nonVisitables = new HashSet<Vector2>();
         bool reachedTarget = false;
 
-        queue.Enqueue(new PathfindingPoint(startingPoint, 0),0);
+        considerationBoxes.Add(Instantiate(considerationBox));
+        considerationBoxes[considerationBoxes.Count - 1].GetComponent<SpriteRenderer>().color = frontierColor;
+        considerationBoxes[considerationBoxes.Count - 1].transform.position = startingPoint;
+        queue.Enqueue(new PathfindingPoint(startingPoint, 0, considerationBoxes[considerationBoxes.Count - 1]),0);
 
         while(!queue.IsEmpty() && !reachedTarget)
         {
             currentPoint = queue.Dequeue();
+            currentPoint.visualBox.GetComponent<SpriteRenderer>().color = doneColor;
             numSearches++;
             if (numSearches > maxSearch) break;
             if(currentPoint.point == targetPosition)
@@ -112,14 +138,19 @@ public class Agent : MonoBehaviour
                 reachedTarget = true;
                 break;
             }
+
             List<Vector2> neighbors = grid.GetNeighbors(currentPoint.point, nonVisitables);
-            foreach(Vector2 neighbor in neighbors)
+            foreach (Vector2 neighbor in neighbors)
             {
                 cameFrom[neighbor] = currentPoint.point;
                 float distanceTravelled = currentPoint.distanceTravelled + Vector2.Distance(currentPoint.point, neighbor);
-                queue.Enqueue(new PathfindingPoint(neighbor, distanceTravelled), (int)CalculateHeuristic(targetPosition, neighbor, distanceTravelled));
+                considerationBoxes.Add(Instantiate(considerationBox));
+                considerationBoxes[considerationBoxes.Count - 1].GetComponent<SpriteRenderer>().color = frontierColor;
+                considerationBoxes[considerationBoxes.Count-1].transform.position = neighbor;
+                queue.Enqueue(new PathfindingPoint(neighbor, distanceTravelled, considerationBoxes[considerationBoxes.Count - 1]), (int)CalculateHeuristic(targetPosition, neighbor, distanceTravelled));
                 nonVisitables.Add(neighbor);
             }
+            yield return new WaitForSeconds(visualizationDelay);
         }
 
         if(reachedTarget)
@@ -146,8 +177,8 @@ public class Agent : MonoBehaviour
         }
 
 
-        
 
+        
     }
     private void OptimizePath()
     {
@@ -201,12 +232,11 @@ public class Agent : MonoBehaviour
 
             currentPath = newPath;
         }
-        
 
     }
     private float CalculateHeuristic(Vector2 targetPosition, Vector2 position, float distanceTravelled)
     {
-        return (Vector2.Distance(position, targetPosition) * 1.001f) + distanceTravelled;
+        return (Vector2.Distance(position, targetPosition)) * 1000;
     }
     private bool CheckPointReachable(Vector2 start, Vector2 end)
     {
@@ -228,11 +258,13 @@ public class Agent : MonoBehaviour
 
 public class PathfindingPoint
 {
-    public PathfindingPoint(Vector2 point, float distanceTravelled)
+    public PathfindingPoint(Vector2 point, float distanceTravelled,GameObject visualBox)
     {
         this.point = point;
         this.distanceTravelled = distanceTravelled;
+        this.visualBox = visualBox;
     }
     public Vector2 point;
     public float distanceTravelled;
+    public GameObject visualBox;
 }
