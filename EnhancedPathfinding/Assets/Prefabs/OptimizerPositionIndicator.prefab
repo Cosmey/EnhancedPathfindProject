@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 5906162915997127870}
   - component: {fileID: 379386007547446045}
   m_Layer: 0
-  m_Name: Agent
+  m_Name: OptimizerPositionIndicator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -82,8 +82,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 2
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 0, g: 1, b: 0.20977783, a: 1}
+  m_Sprite: {fileID: 7482667652216324306, guid: 48e93eef0688c4a259cb0eddcd8661f7, type: 3}
+  m_Color: {r: 0.9681535, g: 0, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -171,14 +171,13 @@ MonoBehaviour:
   maxSearch: 50000
   reachDistance: 0.4
   speed: 130
-  distanceFromTargetBias: 1
   pathLinePrefab: {fileID: 4536387896601857252, guid: 8f37c7814a05063488b3be59f7990934, type: 3}
   considerationBox: {fileID: 1839297817902401239, guid: 86ebb49958183944181b9650b3f6edab, type: 3}
-  pathfindVisualizationDelay: 0.01
+  pathfindVisualizationDelay: 0
   frontierColor: {r: 1, g: 0.6723701, b: 0.2688679, a: 0.54509807}
   doneColor: {r: 0.3584906, g: 0.19680353, b: 0, a: 0.65882355}
   optimizerVisualLinePrefab: {fileID: 4536387896601857252, guid: 95cc82dbc6b622b49b3feba5ebe2612f, type: 3}
-  optimizerCheckPositionVisualizerPrefab: {fileID: 1255282211901623648, guid: 7662f0b46c39a9140850966788770c8d, type: 3}
+  optimizerCheckPositionVisualizerPrefab: {fileID: 0}
   optimizerVisualizationDelay: 0.01
   wallsLayer:
     serializedVersion: 2

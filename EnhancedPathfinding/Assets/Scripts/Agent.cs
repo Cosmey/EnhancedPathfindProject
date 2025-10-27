@@ -11,6 +11,7 @@ public class Agent : MonoBehaviour
     [SerializeField] private int maxSearch;
     [SerializeField] private float reachDistance;
     [SerializeField] private float speed;
+    [SerializeField] private float distanceFromTargetBias;
 
     [SerializeField] private GameObject pathLinePrefab;
     List<GameObject> pathLines;
@@ -24,6 +25,7 @@ public class Agent : MonoBehaviour
     [SerializeField] private Color doneColor;
 
     [SerializeField] private GameObject optimizerVisualLinePrefab;
+    [SerializeField] private GameObject optimizerCheckPositionVisualizerPrefab;
     [SerializeField] private float optimizerVisualizationDelay;
     bool pathOptimized;
 
@@ -64,8 +66,26 @@ public class Agent : MonoBehaviour
             {
                 currentPathPoint++;
             }
-            if (currentPathPoint >= currentPath.Count) atTarget = true;
+            if (currentPathPoint >= currentPath.Count)
+            {
+                currentPathPoint--;
+                if (Vector2.Distance(transform.position, currentPath[currentPathPoint]) < 0.1f)
+                {
+                    transform.position = currentPath[currentPathPoint];
+                    rb.linearVelocity = Vector2.zero;
+                    atTarget = true;
+                }
+            }
+            
         }
+        else
+        {
+            rb.linearVelocity = Vector2.zero;
+        }
+    }
+    public void SetPathfindBias(float bias)
+    {
+        distanceFromTargetBias = bias;
     }
 
     public void ClearPathLines()
@@ -99,7 +119,7 @@ public class Agent : MonoBehaviour
     {
         running = false;
     }
-    private void DrawPath(List<Vector2> path,Color lineColor)
+    private GameObject DrawPath(List<Vector2> path,Color lineColor)
     {
         GameObject line = Instantiate(pathLinePrefab);
         pathLinePrefab.transform.position = Vector2.zero;
@@ -113,6 +133,7 @@ public class Agent : MonoBehaviour
             lRenderer.SetPosition(i, path[i]);
         }
         pathLines.Add(line);
+        return line;
     }
     public IEnumerator<WaitForSeconds> Pathfind()
     {
@@ -152,7 +173,6 @@ public class Agent : MonoBehaviour
                 cameFrom[neighbor] = currentPoint.point;
                 float distanceTravelled = currentPoint.distanceTravelled + Vector2.Distance(currentPoint.point, neighbor);
                 considerationBoxes.Add(Instantiate(considerationBox));
-                considerationBoxes[considerationBoxes.Count - 1].transform.GetChild(0).GetComponent<TextMeshPro>().text = distanceTravelled.ToString();
                 considerationBoxes[considerationBoxes.Count - 1].GetComponent<SpriteRenderer>().color = frontierColor;
                 considerationBoxes[considerationBoxes.Count-1].transform.position = neighbor;
                 queue.Enqueue(new PathfindingPoint(neighbor, distanceTravelled, considerationBoxes[considerationBoxes.Count - 1]), (int)CalculateHeuristic(targetPosition, neighbor, distanceTravelled));
@@ -192,9 +212,16 @@ public class Agent : MonoBehaviour
     {
         if(currentPath.Count > 1)
         {
+            GameObject prevPathVisual = null;
+
+            GameObject startCircle = Instantiate(optimizerCheckPositionVisualizerPrefab);
+            GameObject endCircle = Instantiate(optimizerCheckPositionVisualizerPrefab);
             GameObject visualLine = Instantiate(optimizerVisualLinePrefab);
+            pathLines.Add(startCircle);
+            pathLines.Add(endCircle);
             visualLine.transform.position = Vector2.zero;
             visualLine.GetComponent<LineRenderer>().positionCount = 2;
+            pathLines.Add(visualLine);
 
 
             int nextPositionIndex = 1;
@@ -212,10 +239,14 @@ public class Agent : MonoBehaviour
                         newPath.Add(currentPosition);
                         break;
                     }
+                    startCircle.transform.position = currentPosition;
+                    endCircle.transform.position = currentPath[i];
                     visualLine.GetComponent<LineRenderer>().SetPosition(0, currentPosition);
                     visualLine.GetComponent<LineRenderer>().SetPosition(1, currentPath[i]);
                     yield return new WaitForSeconds(optimizerVisualizationDelay);
                 }
+                Destroy(prevPathVisual);
+                prevPathVisual = DrawPath(newPath, Color.green);
 
                 //check here in case we went straight to the end
                 if (nextPositionIndex >= currentPath.Count-1)
@@ -245,6 +276,10 @@ public class Agent : MonoBehaviour
             }
             DrawPath(newPath, Color.green);
             pathOptimized = true;
+            pathLines.Remove(visualLine);
+            Destroy(visualLine);
+            Destroy(startCircle);
+            Destroy(endCircle);
 
             currentPath = newPath;
         }
@@ -252,7 +287,7 @@ public class Agent : MonoBehaviour
     private float CalculateHeuristic(Vector2 targetPosition, Vector2 position, float distanceTravelled)
     {
         Vector2 distance = targetPosition - position;
-        return Mathf.Abs(distance.x) + Mathf.Abs(distance.y) + distanceTravelled;
+        return (distance.magnitude + (distanceTravelled * distanceFromTargetBias)) * 100;
     }
     private bool CheckPointReachable(Vector2 start, Vector2 end)
     {

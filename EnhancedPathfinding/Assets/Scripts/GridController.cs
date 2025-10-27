@@ -36,6 +36,14 @@ public class GridController : MonoBehaviour
         }
     }
 
+    public void SetAgentPathfindBias(float bias)
+    {
+        if(currentAgent != null)
+        {
+            currentAgent.GetComponent<Agent>().SetPathfindBias(bias);
+        }
+    }
+
     public Vector2 GetTargetPosition()
     {
         return GetGridPositionFromPosition(currentTarget.transform.position);
@@ -50,6 +58,7 @@ public class GridController : MonoBehaviour
         squares = new Dictionary<Vector2, GameObject>();
 
         Destroy(currentTarget);
+        currentAgent.GetComponent<Agent>().ClearConsiderationBoxes();
         currentAgent.GetComponent<Agent>().ClearPathLines();
         Destroy(currentAgent);
     }

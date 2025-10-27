@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 public class CameraController : MonoBehaviour
@@ -12,6 +13,7 @@ public class CameraController : MonoBehaviour
     private bool rightMouseClicked;
 
     private GridController grid;
+
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -34,15 +36,20 @@ public class CameraController : MonoBehaviour
 
     private void TryPlaceSquare()
     {
-        if (leftMouseClicked)
+        Vector2 mouseScreen = Mouse.current.position.ReadValue();
+        if (mouseScreen.x > 700 || mouseScreen.y < 650)
         {
-            grid.ChangeSquare(true, Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue()));
+            if (leftMouseClicked)
+            {
+                grid.ChangeSquare(true, Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue()));
+            }
+
+            if (rightMouseClicked)
+            {
+                grid.ChangeSquare(false, Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue()));
+            }
         }
 
-        if (rightMouseClicked)
-        {
-            grid.ChangeSquare(false, Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue()));
-        }
     }
 
 
