@@ -41,6 +41,9 @@ public class Agent : MonoBehaviour
 
     private bool running;
 
+    private int currentPathfindID;
+
+ 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -113,6 +116,7 @@ public class Agent : MonoBehaviour
     }
     public void Activate()
     {
+        StopAllCoroutines();
         running = true;
     }
     public void Deactivate()
@@ -137,6 +141,8 @@ public class Agent : MonoBehaviour
     }
     public IEnumerator<WaitForSeconds> Pathfind()
     {
+        currentPathfindID++;
+        int pathFindId = currentPathfindID;
         pathOptimized = false;
         ClearPathLines();
         ClearConsiderationBoxes();
@@ -154,11 +160,12 @@ public class Agent : MonoBehaviour
         considerationBoxes[considerationBoxes.Count - 1].GetComponent<SpriteRenderer>().color = frontierColor;
         considerationBoxes[considerationBoxes.Count - 1].transform.position = startingPoint;
         queue.Enqueue(new PathfindingPoint(startingPoint, 0, considerationBoxes[considerationBoxes.Count - 1]),0);
+        nonVisitables.Add(startingPoint);
 
-        while(!queue.IsEmpty() && !reachedTarget)
+        while (!queue.IsEmpty() && !reachedTarget && currentPathfindID == pathFindId)
         {
             currentPoint = queue.Dequeue();
-            currentPoint.visualBox.GetComponent<SpriteRenderer>().color = doneColor;
+            if(currentPoint.visualBox != null) currentPoint.visualBox.GetComponent<SpriteRenderer>().color = doneColor;
             numSearches++;
             if (numSearches > maxSearch) break;
             if(currentPoint.point == targetPosition)
@@ -170,13 +177,16 @@ public class Agent : MonoBehaviour
             List<Vector2> neighbors = grid.GetNeighbors(currentPoint.point, nonVisitables);
             foreach (Vector2 neighbor in neighbors)
             {
-                cameFrom[neighbor] = currentPoint.point;
-                float distanceTravelled = currentPoint.distanceTravelled + Vector2.Distance(currentPoint.point, neighbor);
-                considerationBoxes.Add(Instantiate(considerationBox));
-                considerationBoxes[considerationBoxes.Count - 1].GetComponent<SpriteRenderer>().color = frontierColor;
-                considerationBoxes[considerationBoxes.Count-1].transform.position = neighbor;
-                queue.Enqueue(new PathfindingPoint(neighbor, distanceTravelled, considerationBoxes[considerationBoxes.Count - 1]), (int)CalculateHeuristic(targetPosition, neighbor, distanceTravelled));
-                nonVisitables.Add(neighbor);
+                if (currentPathfindID == pathFindId)
+                {
+                    cameFrom[neighbor] = currentPoint.point;
+                    float distanceTravelled = currentPoint.distanceTravelled + Vector2.Distance(currentPoint.point, neighbor);
+                    considerationBoxes.Add(Instantiate(considerationBox));
+                    considerationBoxes[considerationBoxes.Count - 1].GetComponent<SpriteRenderer>().color = frontierColor;
+                    considerationBoxes[considerationBoxes.Count - 1].transform.position = neighbor;
+                    queue.Enqueue(new PathfindingPoint(neighbor, distanceTravelled, considerationBoxes[considerationBoxes.Count - 1]), (int)CalculateHeuristic(targetPosition, neighbor, distanceTravelled));
+                    nonVisitables.Add(neighbor);
+                }
             }
             yield return new WaitForSeconds(pathfindVisualizationDelay);
         }
@@ -195,7 +205,6 @@ public class Agent : MonoBehaviour
             currentPathPoint = 0;
             DrawPath(currentPath,Color.blue);
             StartCoroutine(OptimizePath());
-
             
         }
         else
