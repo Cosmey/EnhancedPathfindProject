@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GridController : MonoBehaviour
 {
@@ -14,6 +15,9 @@ public class GridController : MonoBehaviour
 
     bool sendAgentUpdate = false;
     int waitTime = 0;
+
+    [SerializeField] private GameObject diagonalsCheckMark;
+    private bool allowDiagonals;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -82,7 +86,14 @@ public class GridController : MonoBehaviour
             for(int j = -1;j <= 1;j++)
             {
                 Vector2 newPosition = gridPosition + new Vector2(i, j);
-                if (!(i != 0 && j != 0) && !squares.ContainsKey(newPosition) && !nonVisitables.Contains(newPosition)) neighbors.Add(newPosition); 
+                if(i != 0 && j != 0 && allowDiagonals)
+                {
+                    if(!squares.ContainsKey(gridPosition + new Vector2(i, 0)) && !squares.ContainsKey(gridPosition + new Vector2(0, j)) && !squares.ContainsKey(newPosition) && !nonVisitables.Contains(newPosition))
+                    {
+                        neighbors.Add(newPosition);
+                    }
+                }
+                else if(!(i != 0 && j != 0) && !squares.ContainsKey(newPosition) && !nonVisitables.Contains(newPosition)) neighbors.Add(newPosition); 
             }
         }
         return neighbors;
@@ -98,6 +109,10 @@ public class GridController : MonoBehaviour
         sendAgentUpdate = true;
     }
 
+    public void ToggleDiagnonals()
+    {
+        allowDiagonals = diagonalsCheckMark.GetComponent<Toggle>().isOn;
+    }
     public void ChangeSquare(bool squareEnabled, Vector2 position)
     {
         Vector2 gridPosition = GetGridPositionFromPosition(position);
